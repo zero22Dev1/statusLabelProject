@@ -1,4 +1,4 @@
-# statusLabelProject
+    # statusLabelProject
 
 
 ```vbnet
@@ -148,6 +148,17 @@ Public Class FormConfirm
         Me.Close()
     End Sub
 End Class
+
+
+
+' チェックボックスの状態が変更されたときのイベント
+Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBox1.CheckedChanged
+    If CheckBox1.Checked Then
+        CheckBox1.Text = "ON"
+    Else
+        CheckBox1.Text = "OFF"
+    End If
+End Sub
 ```
 
 
