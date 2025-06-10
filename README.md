@@ -119,19 +119,23 @@ If resultCode = 10 Then
     Exit Sub
 End If
 
+Private Sub MainForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
+    ' メッセージボックスフォーム作成
+    Dim confirmForm As New ConfirmForm()
+    confirmForm.MessageTitle = "終了"
+    confirmForm.MessageBody = "確認"
 
-
-
-Private Sub MainForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
-    Dim confirmForm As New FormConfirm()
-    Dim result As DialogResult = confirmForm.ShowDialog()
-
-    If result = DialogResult.No Then
-        ' ユーザーが「いいえ」を選んだ → 閉じるのをキャンセル
+    ' 表示して結果を取得
+    If confirmForm.ShowDialog() = DialogResult.OK AndAlso confirmForm.Result = MsgBoxResult.Ok Then
+        ' OK の場合：閉じる
+    Else
+        ' No の場合：キャンセル
         e.Cancel = True
     End If
-    ' Yesの場合はそのまま閉じる
 End Sub
+
+
+
 
 Public Class FormConfirm
     Private Sub btnYes_Click(sender As Object, e As EventArgs) Handles btnYes.Click
