@@ -18,37 +18,106 @@ End Sub
 ```vbnet
 
 Private Sub C1FlexGrid1_DoubleClick(sender As Object, e As EventArgs) Handles C1FlexGrid1.DoubleClick
+    ' 1. 選択行・列の取得
     Dim rowIndex As Integer = C1FlexGrid1.Row
     Dim colIndex As Integer = C1FlexGrid1.Col
+    Dim originalValue As String = C1FlexGrid1(rowIndex, colIndex).ToString()
 
-    ' ヘッダ行は無視（行0がヘッダの場合）
-    If rowIndex < C1FlexGrid1.Rows.Fixed Then Exit Sub
-
-    ' たとえば、「商品コード列」が3列目（インデックス2）だった場合のみ処理
-    If colIndex = 2 Then
-        Dim cellValue As String = C1FlexGrid1(rowIndex, colIndex).ToString()
-
-        ' 子フォームに値を渡して表示
-        Dim detailForm As New FormDetail(cellValue)
-        detailForm.ShowDialog()
+    ' 2. 入力画面を表示（モーダルで）
+    Dim inputForm As New InputForm()
+    inputForm.InputValue = originalValue
+    If inputForm.ShowDialog() <> DialogResult.OK Then
+        Exit Sub
     End If
+
+    Dim newValue As String = inputForm.InputValue
+
+    ' 3. 値が変更されていない場合は中断
+    If originalValue = newValue Then
+        MessageBox.Show("値に変更がありません。処理を中止します。")
+        Exit Sub
+    End If
+
+    ' 4. PLSQL パッケージを呼び出し（OracleCommand使用など）
+    Dim conn As New OracleConnection("接続文字列")
+    Dim tran As OracleTransaction = Nothing
+    Try
+        conn.Open()
+        tran = conn.BeginTransaction()
+
+        Dim cmd As New OracleCommand("パッケージ名.プロシージャ名", conn)
+        cmd.CommandType = CommandType.StoredProcedure
+        cmd.Parameters.Add("p_value", OracleDbType.Varchar2).Value = newValue
+        cmd.Parameters.Add("p_code", OracleDbType.Int32).Direction = ParameterDirection.Output
+
+        cmd.ExecuteNonQuery()
+
+        Dim resultCode As Integer = Convert.ToInt32(cmd.Parameters("p_code").Value)
+
+        ' 5. 処理コード = 10 の場合は専用画面を表示
+        If resultCode = 10 Then
+            Dim specialForm As New SpecialForm()
+            specialForm.ShowDialog()
+            tran.Rollback()
+            Exit Sub
+        End If
+
+        ' 6. 正常終了 → コミット
+        tran.Commit()
+
+        ' 7. 効果音を再生
+        My.Computer.Audio.Play("success.wav", AudioPlayMode.Background)
+
+        ' 8. グリッドの選択行を強調
+        C1FlexGrid1.Select(rowIndex, colIndex)
+
+        MessageBox.Show("更新が完了しました。")
+
+    Catch ex As Exception
+        tran?.Rollback()
+        MessageBox.Show("エラーが発生しました：" & ex.Message)
+    Finally
+        conn.Close()
+    End Try
 End Sub
+```
 
-Public Class FormDetail
-    Private itemCode As String
+```vbnet
+Public Class InputForm
 
-    ' コンストラクタで受け取る
-    Public Sub New(code As String)
-        InitializeComponent()
-        itemCode = code
+    ' 入力値を親画面に渡すプロパティ
+    Public Property InputValue As String
+
+    Private Sub InputForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' 初期値を TextBox に設定
+        TextBox1.Text = InputValue
     End Sub
 
-    Private Sub FormDetail_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Label1.Text = "商品コード: " & itemCode
-        ' 他、必要であればデータベース検索など
+    Private Sub BtnOK_Click(sender As Object, e As EventArgs) Handles BtnOK.Click
+        ' 入力値をプロパティにセットして終了
+        InputValue = TextBox1.Text
+        Me.DialogResult = DialogResult.OK
+        Me.Close()
     End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs) Handles BtnCancel.Click
+        Me.DialogResult = DialogResult.Cancel
+        Me.Close()
+    End Sub
+
 End Class
+```
 
+```vbnet
+If resultCode = 10 Then
+    Dim errForm As New ErrorForm()
+    errForm.ErrorCode = resultCode
+    errForm.ErrorMessage = "更新処理でエラーが発生しました。内容を確認してください。"
+    errForm.ShowDialog()
+
+    tran.Rollback()
+    Exit Sub
+End If
 ```
 
 
