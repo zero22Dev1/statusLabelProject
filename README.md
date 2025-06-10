@@ -118,6 +118,32 @@ If resultCode = 10 Then
     tran.Rollback()
     Exit Sub
 End If
+
+
+
+
+Private Sub MainForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+    Dim confirmForm As New FormConfirm()
+    Dim result As DialogResult = confirmForm.ShowDialog()
+
+    If result = DialogResult.No Then
+        ' ユーザーが「いいえ」を選んだ → 閉じるのをキャンセル
+        e.Cancel = True
+    End If
+    ' Yesの場合はそのまま閉じる
+End Sub
+
+Public Class FormConfirm
+    Private Sub btnYes_Click(sender As Object, e As EventArgs) Handles btnYes.Click
+        Me.DialogResult = DialogResult.Yes
+        Me.Close()
+    End Sub
+
+    Private Sub btnNo_Click(sender As Object, e As EventArgs) Handles btnNo.Click
+        Me.DialogResult = DialogResult.No
+        Me.Close()
+    End Sub
+End Class
 ```
 
 
