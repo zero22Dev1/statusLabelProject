@@ -159,6 +159,15 @@ Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles C
         CheckBox1.Text = "OFF"
     End If
 End Sub
+
+
+If CheckBox1.Checked Then
+    ' チェックされている場合の処理
+    MessageBox.Show("チェックされています")
+Else
+    ' チェックされていない場合の処理
+    MessageBox.Show("チェックされていません")
+End If
 ```
 
 
