@@ -1,3 +1,4 @@
+```sql
 BEGIN
   -- 外側の処理
   DBMS_OUTPUT.PUT_LINE('外側処理開始');
@@ -34,3 +35,4 @@ EXCEPTION
   WHEN OTHERS THEN
     DBMS_OUTPUT.PUT_LINE('外側で未処理のエラー: ' || SQLERRM);
 END;
+```
