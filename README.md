@@ -36,3 +36,19 @@ EXCEPTION
     DBMS_OUTPUT.PUT_LINE('外側で未処理のエラー: ' || SQLERRM);
 END;
 ```
+
+
+Private Sub ButtonBackspace_Click(sender As Object, e As EventArgs) Handles ButtonBackspace.Click
+    If resultDisplayed Then
+        ' 計算結果が表示された直後にバックスペースを押したらリセット
+        TextBoxDisplay.Text = "0"
+        resultDisplayed = False
+    Else
+        Dim currentText As String = TextBoxDisplay.Text
+        If currentText.Length > 1 Then
+            TextBoxDisplay.Text = currentText.Substring(0, currentText.Length - 1)
+        Else
+            TextBoxDisplay.Text = "0"
+        End If
+    End If
+End Sub
